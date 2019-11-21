@@ -1,0 +1,3 @@
+node_modules
+server/fireBase.ts
+serviceAccountKey.json
