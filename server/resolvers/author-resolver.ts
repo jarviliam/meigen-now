@@ -1,4 +1,4 @@
-import { Resolver, Query } from "type-graphql";
+import { Resolver, Query, Arg } from "type-graphql";
 import { Author } from "../types/author-types";
 import { FbApp } from "../fireBase";
 import { plainToClass } from "class-transformer";
@@ -30,4 +30,20 @@ export class AuthorResolver {
         console.log("Error getting documents", err);
       });
   }
+//Get a specific author by ID
+  @Query(() => Author)
+  async getAuthor(@Arg("id") id:string): Promise<Author> {
+    return await FbApp().collection('authors').doc(id).get()
+    .then((doc : any) => {
+      if(doc){
+        const author = plainToClass(Author, {id: doc.id, name: doc.data().name, country: doc.data().country})
+        return author
+      }
+      else{
+        return "Not Found"
+      }
+    })
+    .catch((err: any) => console.log(err))
+  }
+
 }
