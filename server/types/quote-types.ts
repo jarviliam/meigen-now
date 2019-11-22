@@ -10,4 +10,10 @@ export class Quote {
 
   @Field({ description: "Quote Rating" })
   rating: number;
+
+  @Field({ description: "Source Material", nullable: true})
+  source: string;
+
+  @Field({ description: "Source Id", nullable:true})
+  sourceId: string;
 }
