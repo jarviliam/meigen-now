@@ -5,10 +5,10 @@ import { plainToClass } from "class-transformer";
 
 @Resolver()
 export class QuoteResolver {
-  @Query(() => String)
+  @Query(() => Quote || String)
   async getQuotebyId(@Arg("id") id: string): Promise<Quote> {
     return await FbApp()
-      .firebase()
+      .firestore()
       .collection("quotes")
       .doc(id)
       .get()
@@ -18,7 +18,7 @@ export class QuoteResolver {
             id: doc.id,
             quote: doc.data().quote,
             rating: doc.data().rating,
-            source: doc.data().source
+            author: doc.data().author
           });
           return quote;
         } else {
@@ -32,7 +32,7 @@ export class QuoteResolver {
   @Query(() => [Quote])
   async getAllQuotes(): Promise<Quote[]> {
     return await FbApp()
-      .firebase()
+      .firestore()
       .collection("quotes")
       .get()
       .then((document: any) => {
@@ -42,7 +42,7 @@ export class QuoteResolver {
             id: quote.id,
             quote: quote.data().quote,
             rating: quote.data().rating,
-            source: quote.data().source
+            author: quote.data().author
           });
           quoteArray.push(quoteObject);
         });
@@ -57,19 +57,19 @@ export class QuoteResolver {
   async makeQuote(
     @Arg("quote") quote: string,
     @Arg("rating") rating: number,
-    @Arg("sourceName") sourceName: string,
+    @Arg("authorName") authorName: string,
     @Arg("sourceId") sourceId: string
   ): Promise<Quote> {
     //Add Bycrypt for ID creation
     return await FbApp()
-      .firebase()
+      .firestore()
       .collection("quotes")
-      .add({ quote, rating, sourceName, sourceId })
+      .add({ quote, rating, authorName, sourceId })
       .then((ref: any) => {
         const quoteObject = plainToClass(Quote, {
           quote,
           rating,
-          sourceName,
+          authorName,
           sourceId
         });
         console.log("Added Quote with Id of ", ref.id);

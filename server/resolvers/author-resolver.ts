@@ -8,7 +8,7 @@ export class AuthorResolver {
   @Query(() => [Author])
   //Getting all authors from firebase
   async getAllAuthors(): Promise<Author[]> {
-    const admin = FbApp().firebase();
+    const admin = FbApp().firestore();
     const db = admin.collection("authors");
     return await db
       .get()
@@ -34,7 +34,7 @@ export class AuthorResolver {
   @Query(() => Author)
   async getAuthor(@Arg("id") id: string): Promise<Author> {
     return await FbApp()
-      .firebase()
+      .firestore()
       .collection("authors")
       .doc(id)
       .get()
