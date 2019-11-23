@@ -92,4 +92,18 @@ export class QuoteResolver {
     }
     return `Did not manage to find document by id of ${id}`;
   }
+
+  @Mutation(() => String)
+  async downVoteRating(@Arg("id") id: string): Promise<String> {
+    const decrement = FbApp().firestore.FieldValue.decrement(1.0);
+    const doc = FbApp()
+      .firestore()
+      .collection("quotes")
+      .doc(id);
+    if (doc) {
+      doc.update({ rating: decrement });
+      return `Successfully decreased rating of id : ${id}`;
+    }
+    return `Failed to find the document by id of ${id}`;
+  }
 }
