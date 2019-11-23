@@ -1,5 +1,5 @@
 import { FbApp } from "../fireBase";
-import { Resolver, Query, Arg } from "type-graphql";
+import { Resolver, Query, Arg, Mutation } from "type-graphql";
 import { plainToClass } from "class-transformer";
 import { Book } from "../types/book-types";
 
@@ -49,6 +49,32 @@ export class BookResolver {
       })
       .catch((error: any) => {
         console.log("Error found collecting all books ", error);
+      });
+  }
+
+  @Mutation(() => Book)
+  async createBook(
+    @Arg("title") title: String,
+    @Arg("publishedDate") publishedDate: Date,
+    @Arg("author") author: String
+  ): Promise<String> {
+    const db = FbApp()
+      .firebase()
+      .collection("books");
+
+    return await db
+      .add({ title, publishedDate, author })
+      .then((res: any) => {
+        const bookObject = plainToClass(Book, {
+          id: res.id,
+          publishedDate: res.data().publishedDate,
+          author: res.data().author,
+          title: res.data().title
+        });
+        return bookObject;
+      })
+      .catch((error: any) => {
+        console.log("Error making book", error);
       });
   }
 }
