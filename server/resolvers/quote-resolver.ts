@@ -1,6 +1,6 @@
 import { Resolver, Query, Arg, Mutation } from "type-graphql";
 import { Quote } from "../types/quote-types";
-import { FbApp } from "server/fireBase";
+import { FbApp } from "../fireBase";
 import { plainToClass } from "class-transformer";
 
 @Resolver()
@@ -8,6 +8,7 @@ export class QuoteResolver {
   @Query(() => String)
   async getQuotebyId(@Arg("id") id: string): Promise<Quote> {
     return await FbApp()
+      .firebase()
       .collection("quotes")
       .doc(id)
       .get()
@@ -17,7 +18,7 @@ export class QuoteResolver {
             id: doc.id,
             quote: doc.data().quote,
             rating: doc.data().rating,
-            source : doc.data().source
+            source: doc.data().source
           });
           return quote;
         } else {
@@ -31,11 +32,12 @@ export class QuoteResolver {
   @Query(() => [Quote])
   async getAllQuotes(): Promise<Quote[]> {
     return await FbApp()
+      .firebase()
       .collection("quotes")
       .get()
       .then((document: any) => {
         const quoteArray: Array<Quote> = [];
-        document.map((quote: any) => {
+        document.forEach((quote: any) => {
           const quoteObject = plainToClass(Quote, {
             id: quote.id,
             quote: quote.data().quote,
@@ -50,34 +52,43 @@ export class QuoteResolver {
       .catch((err: any) => console.log(err));
   }
 
-//Make one quote
- @Mutation(() => Quote)
- async makeQuote(
-   @Arg("quote") quote: string,
-   @Arg("rating") rating: number,
-   @Arg("sourceName") sourceName: string,
-   @Arg("sourceId") sourceId: string,
- ) : Promise<Quote> {
-   //Add Bycrypt for ID creation
+  //Make one quote
+  @Mutation(() => Quote)
+  async makeQuote(
+    @Arg("quote") quote: string,
+    @Arg("rating") rating: number,
+    @Arg("sourceName") sourceName: string,
+    @Arg("sourceId") sourceId: string
+  ): Promise<Quote> {
+    //Add Bycrypt for ID creation
     return await FbApp()
-    .collection('quotes')
-    .add({quote,rating,sourceName,sourceId})
-    .then((ref : any) => { 
-      const quoteObject = plainToClass(Quote,{quote,rating,sourceName,sourceId})
-      console.log('Added Quote with Id of ', ref.id)
-      return quoteObject
-    })
-    .catch((err : any) => console.log(err))
- }
+      .collection("quotes")
+      .add({ quote, rating, sourceName, sourceId })
+      .then((ref: any) => {
+        const quoteObject = plainToClass(Quote, {
+          quote,
+          rating,
+          sourceName,
+          sourceId
+        });
+        console.log("Added Quote with Id of ", ref.id);
+        return quoteObject;
+      })
+      .catch((err: any) => console.log(err));
+  }
 
-//Upvote a Quote ranking Look into FieldValue increment logic
- @Mutation(()=> Number)
- async upVoteRating(@Arg('id') id: string) : Promise<String>
- {
-  return await FbApp()
-  .collection('quotes').doc(id)
-  .update({rating: FbApp().FieldValue.increment(1)})
- }
-
-
+  //Upvote a Quote ranking Look into FieldValue increment logic
+  @Mutation(() => String)
+  async upVoteRating(@Arg("id") id: string): Promise<String> {
+    const increment = FbApp().firestore.FieldValue.increment(1.0);
+    const doc = FbApp()
+      .firestore()
+      .collection("quotes")
+      .doc(id);
+    if (doc) {
+      doc.update({ rating: increment });
+      return `Successfully increased rating of id: ${id}`;
+    }
+    return `Did not manage to find document by id of ${id}`;
+  }
 }
