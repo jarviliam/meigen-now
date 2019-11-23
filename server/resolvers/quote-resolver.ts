@@ -62,6 +62,7 @@ export class QuoteResolver {
   ): Promise<Quote> {
     //Add Bycrypt for ID creation
     return await FbApp()
+      .firebase()
       .collection("quotes")
       .add({ quote, rating, sourceName, sourceId })
       .then((ref: any) => {

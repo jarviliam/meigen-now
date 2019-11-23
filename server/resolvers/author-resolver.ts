@@ -8,7 +8,7 @@ export class AuthorResolver {
   @Query(() => [Author])
   //Getting all authors from firebase
   async getAllAuthors(): Promise<Author[]> {
-    const admin = FbApp();
+    const admin = FbApp().firebase();
     const db = admin.collection("authors");
     return await db
       .get()
@@ -30,20 +30,26 @@ export class AuthorResolver {
         console.log("Error getting documents", err);
       });
   }
-//Get a specific author by ID
+  //Get a specific author by ID
   @Query(() => Author)
-  async getAuthor(@Arg("id") id:string): Promise<Author> {
-    return await FbApp().collection('authors').doc(id).get()
-    .then((doc : any) => {
-      if(doc){
-        const author = plainToClass(Author, {id: doc.id, name: doc.data().name, country: doc.data().country})
-        return author
-      }
-      else{
-        return "Not Found"
-      }
-    })
-    .catch((err: any) => console.log(err))
+  async getAuthor(@Arg("id") id: string): Promise<Author> {
+    return await FbApp()
+      .firebase()
+      .collection("authors")
+      .doc(id)
+      .get()
+      .then((doc: any) => {
+        if (doc) {
+          const author = plainToClass(Author, {
+            id: doc.id,
+            name: doc.data().name,
+            country: doc.data().country
+          });
+          return author;
+        } else {
+          return "Not Found";
+        }
+      })
+      .catch((err: any) => console.log(err));
   }
-
 }

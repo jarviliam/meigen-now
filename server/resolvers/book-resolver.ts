@@ -9,6 +9,7 @@ export class BookResolver {
   @Query(() => Book)
   async getBookById(@Arg("id") id: string): Promise<Book> {
     return await FbApp()
+      .firebase()
       .collection("books")
       .doc(id)
       .get()
@@ -29,6 +30,7 @@ export class BookResolver {
   @Query(() => [Book])
   async getAllBooks(): Promise<Array<Book>> {
     return await FbApp()
+      .firebase()
       .collection("books")
       .get()
       .then((result: any) => {
