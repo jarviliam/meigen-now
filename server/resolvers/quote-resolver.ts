@@ -18,7 +18,8 @@ export class QuoteResolver {
             id: doc.id,
             quote: doc.data().quote,
             rating: doc.data().rating,
-            author: doc.data().author
+            author: doc.data().author,
+            explanation: doc.data().explanation
           });
           return quote;
         } else {
@@ -42,7 +43,8 @@ export class QuoteResolver {
             id: quote.id,
             quote: quote.data().quote,
             rating: quote.data().rating,
-            author: quote.data().author
+            author: quote.data().author,
+            explanation: quote.data().explanation
           });
           quoteArray.push(quoteObject);
         });
@@ -51,6 +53,7 @@ export class QuoteResolver {
       })
       .catch((err: any) => console.log(err));
   }
+  //Get top 10 quotes by rating
 
   //Make one quote
   @Mutation(() => Quote)
@@ -58,7 +61,8 @@ export class QuoteResolver {
     @Arg("quote") quote: string,
     @Arg("rating") rating: number,
     @Arg("authorName") authorName: string,
-    @Arg("sourceId") sourceId: string
+    @Arg("sourceId") sourceId: string,
+    @Arg("explanation") explanation: string
   ): Promise<Quote> {
     //Add Bycrypt for ID creation
     return await FbApp()
@@ -70,7 +74,8 @@ export class QuoteResolver {
           quote,
           rating,
           authorName,
-          sourceId
+          sourceId,
+          explanation
         });
         console.log("Added Quote with Id of ", ref.id);
         return quoteObject;
@@ -106,4 +111,20 @@ export class QuoteResolver {
     }
     return `Failed to find the document by id of ${id}`;
   }
+
+  // @Mutation(() => String)
+  // async updateQuote(
+  //   @Arg("id") id: string,
+  //   @Arg("updateObject") updateObject: object
+  // ): Promise<String> {
+  //   const doc = FbApp()
+  //     .firestore()
+  //     .collection("quotes")
+  //     .doc(id);
+  //   if (doc) {
+  //     doc.update({ updateObject });
+  //     return `Updated ${id} with `;
+  //   }
+  //   return `Failed to find the document by id of ${id}`;
+  // }
 }

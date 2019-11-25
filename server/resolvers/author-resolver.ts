@@ -1,4 +1,4 @@
-import { Resolver, Query, Arg } from "type-graphql";
+import { Resolver, Query, Arg, Mutation } from "type-graphql";
 import { Author } from "../types/author-types";
 import { FbApp } from "../fireBase";
 import { plainToClass } from "class-transformer";
@@ -51,5 +51,29 @@ export class AuthorResolver {
         }
       })
       .catch((err: any) => console.log(err));
+  }
+
+  @Mutation(() => Author)
+  async createAuthor(
+    @Arg("name") name: String,
+    @Arg("country") country: String
+  ): Promise<String> {
+    const db = FbApp()
+      .firestore()
+      .collection("authors");
+
+    return await db
+      .add({ name, country })
+      .then((response: any) => {
+        const authorObject = plainToClass(Author, {
+          name,
+          country,
+          id: response.id
+        });
+        return authorObject;
+      })
+      .catch((error: any) => {
+        console.log("Error making an Author object ", error);
+      });
   }
 }

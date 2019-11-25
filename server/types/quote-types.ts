@@ -10,7 +10,8 @@ export class Quote {
 
   @Field({ description: "Quote Rating" })
   rating: number;
-
+  @Field({ description: "Quote explanation", nullable: true })
+  explanation: string;
   @Field({ description: "Source Material", nullable: true })
   author: string;
 
