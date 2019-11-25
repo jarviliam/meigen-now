@@ -1,18 +1,11 @@
 import "reflect-metadata";
 
 const express = require("express");
-
-// const graphHTTP = require('express-graphql')
-import { buildSchema } from "type-graphql";
 import { ApolloServer } from "apollo-server-express";
-import { QuoteResolver } from "./resolvers/quote-resolver";
-import { AuthorResolver } from "./resolvers/author-resolver";
-import { BookResolver } from "./resolvers/book-resolver";
+import { makeSchema } from "./utils/makeSchema";
 
 const main = async () => {
-  const schema = await buildSchema({
-    resolvers: [QuoteResolver, AuthorResolver, BookResolver]
-  });
+  const schema = await makeSchema();
   const apolloServer = new ApolloServer({ schema });
   const app = express();
 

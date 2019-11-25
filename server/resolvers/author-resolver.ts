@@ -2,6 +2,7 @@ import { Resolver, Query, Arg, Mutation } from "type-graphql";
 import { Author } from "../types/author-types";
 import { FbApp } from "../fireBase";
 import { plainToClass } from "class-transformer";
+import { AuthorInput } from "../inputs/author-inputs";
 
 @Resolver()
 export class AuthorResolver {
@@ -16,12 +17,9 @@ export class AuthorResolver {
         const AuthorArr: Array<Author> = [];
         //Loop through each document. Put info into an Author Class Object then push to array for return
         document.forEach((doc: any) => {
-          const object = {
-            id: doc.id,
-            name: doc.data().name,
-            country: doc.data().country
-          };
-          const newAuthor = plainToClass(Author, object);
+          let authorObject = doc.data();
+          authorObject.id = doc.id;
+          const newAuthor = plainToClass(Author, authorObject);
           AuthorArr.push(newAuthor);
         });
         return AuthorArr;
@@ -40,11 +38,9 @@ export class AuthorResolver {
       .get()
       .then((doc: any) => {
         if (doc) {
-          const author = plainToClass(Author, {
-            id: doc.id,
-            name: doc.data().name,
-            country: doc.data().country
-          });
+          const authorObject = doc.data();
+          authorObject.id = doc.id;
+          const author = plainToClass(Author, authorObject);
           return author;
         } else {
           return "Not Found";
@@ -55,16 +51,18 @@ export class AuthorResolver {
 
   @Mutation(() => Author)
   async createAuthor(
-    @Arg("name") name: String,
-    @Arg("country") country: String
+    @Arg("data")
+    { name, country, birthdate, engName, dateOfDeath, summary }: AuthorInput
   ): Promise<String> {
+    let test = { name, country, birthdate, engName, dateOfDeath, summary };
+    console.log(test);
     const db = FbApp()
       .firestore()
       .collection("authors");
-
     return await db
-      .add({ name, country })
+      .add({ name, country, birthdate, engName, dateOfDeath, summary })
       .then((response: any) => {
+        //Can probably be switched with just a confirmation string as a return as the object does not need to be presented back
         const authorObject = plainToClass(Author, {
           name,
           country,

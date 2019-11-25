@@ -2,6 +2,7 @@ import { Resolver, Query, Arg, Mutation } from "type-graphql";
 import { Quote } from "../types/quote-types";
 import { FbApp } from "../fireBase";
 import { plainToClass } from "class-transformer";
+import { CreateQuoteInputs } from "../inputs/quote-inputs";
 
 @Resolver()
 export class QuoteResolver {
@@ -58,22 +59,19 @@ export class QuoteResolver {
   //Make one quote
   @Mutation(() => Quote)
   async makeQuote(
-    @Arg("quote") quote: string,
-    @Arg("rating") rating: number,
-    @Arg("authorName") authorName: string,
-    @Arg("sourceId") sourceId: string,
-    @Arg("explanation") explanation: string
+    @Arg("data")
+    { quote, rating, author, sourceId, explanation }: CreateQuoteInputs
   ): Promise<Quote> {
     //Add Bycrypt for ID creation
     return await FbApp()
       .firestore()
       .collection("quotes")
-      .add({ quote, rating, authorName, sourceId })
+      .add({ quote, rating, author, sourceId })
       .then((ref: any) => {
         const quoteObject = plainToClass(Quote, {
           quote,
           rating,
-          authorName,
+          author,
           sourceId,
           explanation
         });
@@ -110,6 +108,36 @@ export class QuoteResolver {
       return `Successfully decreased rating of id : ${id}`;
     }
     return `Failed to find the document by id of ${id}`;
+  }
+  @Mutation(() => String)
+  async addExplanation(
+    @Arg("id") id: string,
+    @Arg("explanation") explanation: string
+  ) {
+    const doc = FbApp()
+      .firestore()
+      .collection("quotes")
+      .doc(id);
+
+    if (doc) {
+      doc.update({ explanation: explanation });
+      return `Explanation successfully added to document ${doc.id}`;
+    }
+
+    return `Could not find document by id of ${id}`;
+  }
+
+  @Mutation(() => String)
+  async addBookRef(@Arg("id") id: string, @Arg("sourceId") sourceId: string) {
+    const doc = FbApp()
+      .firestore()
+      .collection("quotes")
+      .doc(id);
+    if (doc) {
+      doc.update({ sourceId: sourceId });
+      return `Source ID of ${sourceId} added to document id of ${doc.id}`;
+    }
+    return `Could not find document by id of ${id}`;
   }
 
   // @Mutation(() => String)
