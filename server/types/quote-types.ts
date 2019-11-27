@@ -3,7 +3,7 @@ import { ObjectType, Field, ID } from "type-graphql";
 @ObjectType({ description: "Quote Type" })
 export class Quote {
   @Field(() => ID)
-  id: number;
+  id: string;
 
   @Field({ description: "Actual Quote" })
   quote: string;

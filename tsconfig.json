@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2018",
     "module": "commonjs",
     "lib": ["dom", "es6", "es2017", "esnext.asynciterable"],
     "sourceMap": true,
@@ -9,7 +9,7 @@
     "declaration": false,
 
     "composite": false,
-    "removeComments": true,
+    "removeComments": false,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,

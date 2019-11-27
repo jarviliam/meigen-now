@@ -4,6 +4,13 @@ import { FbApp } from "../fireBase";
 import { plainToClass } from "class-transformer";
 import { CreateQuoteInputs } from "../inputs/quote-inputs";
 
+// type QuoteT = {
+//   quote: string;
+//   rating: number;
+//   explanation?: string;
+//   author: string;
+//   sourceId?: string;
+// };
 @Resolver()
 export class QuoteResolver {
   @Query(() => Quote || String)
@@ -15,14 +22,9 @@ export class QuoteResolver {
       .get()
       .then((doc: any) => {
         if (doc) {
-          const quote = plainToClass(Quote, {
-            id: doc.id,
-            quote: doc.data().quote,
-            rating: doc.data().rating,
-            author: doc.data().author,
-            explanation: doc.data().explanation
-          });
-          return quote;
+          const quoteObject = doc.data();
+          quoteObject.id = doc.id;
+          return quoteObject;
         } else {
           return "Not found";
         }
@@ -55,30 +57,54 @@ export class QuoteResolver {
       .catch((err: any) => console.log(err));
   }
   //Get top 10 quotes by rating
-
+  @Query(() => [Quote])
+  async getTopQuotes(): Promise<Quote[]> {
+    return await FbApp()
+      .firestore()
+      .collection("quotes")
+      .orderBy("rating")
+      .limit(10)
+      .get()
+      .then((response: any) => {
+        const quoteArray: Array<Quote> = [];
+        if (response) {
+          response.forEach((quote: any) => {
+            let object = quote.data();
+            object.id = quote.id;
+            console.log(object);
+            quoteArray.unshift(plainToClass(Quote, object));
+          });
+          return quoteArray;
+        }
+        return "Document not found";
+      })
+      .catch((error: Error) => console.log(error));
+  }
   //Make one quote
   @Mutation(() => Quote)
   async makeQuote(
     @Arg("data")
     { quote, rating, author, sourceId, explanation }: CreateQuoteInputs
   ): Promise<Quote> {
-    //Add Bycrypt for ID creation
     return await FbApp()
       .firestore()
       .collection("quotes")
-      .add({ quote, rating, author, sourceId })
+      .add({ quote, rating, author, sourceId, explanation })
       .then((ref: any) => {
-        const quoteObject = plainToClass(Quote, {
-          quote,
-          rating,
-          author,
-          sourceId,
-          explanation
-        });
+        const quoteObject = ref.data();
+        quoteObject.id = ref.id;
         console.log("Added Quote with Id of ", ref.id);
-        return quoteObject;
+        return plainToClass(Quote, quoteObject);
       })
       .catch((err: any) => console.log(err));
+  }
+  @Mutation(() => [Quote])
+  async makeBatchQuotes(
+    @Arg("data", () => [Quote]) data: [Quote]
+  ): Promise<string> {
+    let test = data;
+    console.log(test);
+    return await "test";
   }
 
   //Upvote a Quote ranking Look into FieldValue increment logic
