@@ -3,6 +3,7 @@ import { Quote } from "../types/quote-types";
 import { FbApp } from "../fireBase";
 import { plainToClass } from "class-transformer";
 import { CreateQuoteInputs } from "../inputs/quote-inputs";
+// import { CreateArrayQuote } from "../inputs/quote-inputs";
 
 // type QuoteT = {
 //   quote: string;
@@ -98,13 +99,25 @@ export class QuoteResolver {
       })
       .catch((err: any) => console.log(err));
   }
-  @Mutation(() => [Quote])
-  async makeBatchQuotes(
-    @Arg("data", () => [Quote]) data: [Quote]
-  ): Promise<string> {
-    let test = data;
-    console.log(test);
-    return await "test";
+
+  //Make a batch of quote inserts
+  @Mutation(() => String)
+  async makeBatchQuotes(@Arg("data", () => Quote) data: Quote[]) {
+    const database = FbApp().firestore();
+    let batch = database.batch();
+    data.map(quoteEntry => {
+      let quoteRef = database.collection("quotes").doc();
+
+      batch.set(quoteRef, quoteEntry);
+      console.log(quoteEntry);
+    });
+    return await batch
+      .commit()
+      .then((response: any) => {
+        console.log(response);
+        return "Batch was successfully written";
+      })
+      .catch((error: Error) => console.log(error));
   }
 
   //Upvote a Quote ranking Look into FieldValue increment logic
