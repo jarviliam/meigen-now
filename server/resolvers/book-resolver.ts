@@ -52,6 +52,31 @@ export class BookResolver {
       });
   }
 
+  //Get Books by Author Id
+  @Query(() => [Book])
+  async getBooksbyAuthor(
+    @Arg("authorID") authorID: string
+  ): Promise<Array<Book>> {
+    return await FbApp()
+      .firebase()
+      .collection("books")
+      .where("authorId", "==", authorID)
+      .then((response: any) => {
+        const bookArray: Array<Book> = [];
+
+        response.forEach((book: any) => {
+          let bookObject = plainToClass(Book, {
+            id: book.id,
+            title: book.data().title,
+            author: book.data().author,
+            publishedDate: book.data().publishedDate
+          });
+          bookArray.push(bookObject);
+        });
+        return bookArray;
+      })
+      .catch((error: Error) => console.log(error));
+  }
   @Mutation(() => Book)
   async createBook(
     @Arg("title") title: String,
