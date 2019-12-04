@@ -12,6 +12,7 @@ import { CreateQuoteInputs } from "../inputs/quote-inputs";
 //   author: string;
 //   sourceId?: string;
 // };
+
 @Resolver()
 export class QuoteResolver {
   @Query(() => Quote || String)
@@ -81,16 +82,67 @@ export class QuoteResolver {
       })
       .catch((error: Error) => console.log(error));
   }
+  //Quotes by BOOK
+  @Query(() => [Quote])
+  async getQuotesByBookId(@Arg("bookID") bookID: string): Promise<String> {
+    return await FbApp()
+      .firestore()
+      .colleciton("quotes")
+      .where("sourceId", "==", bookID)
+      .orderby("rating")
+      .get()
+      .then((response: any) => {
+        // const quoteArray: Quote[] = [];
+        if (response) {
+          console.log(response);
+        }
+        return "Could not find any quotes by bookID";
+      })
+      .catch((error: Error) => {
+        console.log(error);
+        return "Error getting quotes by Book ID";
+      });
+  }
+  //Quotes by Author
+  @Query(() => [Quote])
+  async getQuotesByAuthor(@Arg("authorID") authorID: string): Promise<String> {
+    return FbApp()
+      .firestore()
+      .collection("quotes")
+      .where("authorID", "==", authorID)
+      .orderBy("rating")
+      .get()
+      .then((response: any) => {
+        const quoteArray: Quote[] = [];
+        response.forEach((quote: any) => {
+          const quoteObject = quote.data();
+          quoteObject.id = quote.id;
+          quoteArray.unshift(quoteObject);
+        });
+        return quoteArray;
+      })
+      .catch((error: Error) => {
+        console.log(error);
+        return "Error fetching quotes by author";
+      });
+  }
   //Make one quote
   @Mutation(() => Quote)
   async makeQuote(
     @Arg("data")
-    { quote, rating, author, sourceId, explanation }: CreateQuoteInputs
+    {
+      quote,
+      rating,
+      author,
+      sourceId,
+      explanation,
+      authorID
+    }: CreateQuoteInputs
   ): Promise<Quote> {
     return await FbApp()
       .firestore()
       .collection("quotes")
-      .add({ quote, rating, author, sourceId, explanation })
+      .add({ quote, rating, author, sourceId, explanation, authorID })
       .then((ref: any) => {
         const quoteObject = ref.data();
         quoteObject.id = ref.id;
@@ -179,19 +231,19 @@ export class QuoteResolver {
     return `Could not find document by id of ${id}`;
   }
 
-  // @Mutation(() => String)
-  // async updateQuote(
-  //   @Arg("id") id: string,
-  //   @Arg("updateObject") updateObject: object
-  // ): Promise<String> {
-  //   const doc = FbApp()
-  //     .firestore()
-  //     .collection("quotes")
-  //     .doc(id);
-  //   if (doc) {
-  //     doc.update({ updateObject });
-  //     return `Updated ${id} with `;
+  //   @Mutation(() => String)
+  //   async updateQuote(
+  //     @Arg("id") id: string,
+  //     @Arg("updateObject") updateObject: object
+  //   ): Promise<String> {
+  //     const doc = FbApp()
+  //       .firestore()
+  //       .collection("quotes")
+  //       .doc(id);
+  //     if (doc) {
+  //       doc.update({ updateObject });
+  //       return `Updated ${id} with `;
+  //     }
+  //     return `Failed to find the document by id of ${id}`;
   //   }
-  //   return `Failed to find the document by id of ${id}`;
-  // }
 }

@@ -11,7 +11,8 @@ export class CreateQuoteInputs {
   explanation: string;
   @Field({ description: "Source Material", nullable: true })
   author: string;
-
+  @Field({ description: "Author ID" })
+  authorID: string;
   @Field({ description: "Source Id", nullable: true })
   sourceId: string;
 }

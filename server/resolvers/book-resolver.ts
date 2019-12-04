@@ -2,6 +2,7 @@ import { FbApp } from "../fireBase";
 import { Resolver, Query, Arg, Mutation } from "type-graphql";
 import { plainToClass } from "class-transformer";
 import { Book } from "../types/book-types";
+import { CreateBookInput } from "../inputs/book-inputs";
 
 @Resolver()
 export class BookResolver {
@@ -79,24 +80,32 @@ export class BookResolver {
   }
   @Mutation(() => Book)
   async createBook(
-    @Arg("title") title: String,
-    @Arg("publishedDate") publishedDate: Date,
-    @Arg("author") author: String
+    @Arg("data")
+    {
+      title,
+      author,
+      publishedDate,
+      summary,
+      label,
+      authorId,
+      publisher
+    }: CreateBookInput
   ): Promise<String> {
-    const db = FbApp()
-      .firebase()
-      .collection("books");
-
-    return await db
-      .add({ title, publishedDate, author })
+    return await FbApp()
+      .firestore()
+      .collection("books")
+      .add({
+        title,
+        author,
+        publishedDate,
+        summary,
+        label,
+        authorId,
+        publisher
+      })
       .then((res: any) => {
-        const bookObject = plainToClass(Book, {
-          id: res.id,
-          publishedDate: res.data().publishedDate,
-          author: res.data().author,
-          title: res.data().title
-        });
-        return bookObject;
+        console.log(res);
+        return "Book Made";
       })
       .catch((error: any) => {
         console.log("Error making book", error);
