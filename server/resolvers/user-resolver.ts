@@ -16,6 +16,12 @@ class LoginResponse {
   accessToken: string;
 }
 
+@ObjectType()
+class RegisterResponse {
+  @Field()
+  message: string;
+}
+
 @Resolver()
 export class UserResolver {
   @Mutation(() => LoginResponse)
@@ -55,22 +61,26 @@ export class UserResolver {
     };
   }
   //Might remove ID field and just use username if its only one person
-  @Mutation(() => String)
+  @Mutation(() => RegisterResponse)
   async register(
-    @Arg("id") id: String,
     @Arg("username") username: string,
     @Arg("password") password: string
   ) {
-    const hashed = await hash(password, process.env.SECRET_KEY!);
+    const hashed = await hash(password, 12);
     console.log(process.env.SECRET_KEY);
     console.log(hashed);
-    try {
-      await FbApp()
-        .firebase()
-        .collection("users")
-        .add({ username, hashed });
-    } catch (error) {
-      console.log(error);
-    }
+    await FbApp()
+      .firestore()
+      .collection("users")
+      .add({ username, password: hashed })
+      .then((response: any) => {
+        console.log(response);
+        return {
+          message: "Successful"
+        };
+      })
+      .catch((error: Error) => {
+        console.log(error);
+      });
   }
 }
