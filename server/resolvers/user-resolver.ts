@@ -5,11 +5,6 @@ import { sign } from "jsonwebtoken";
 import { FbApp } from "../fireBase";
 import { IContext } from "../types/context-types";
 
-// @InputType()
-// class UserType {
-//     @Field()
-// }
-
 @ObjectType()
 class LoginResponse {
   @Field()
@@ -35,27 +30,23 @@ export class UserResolver {
       .collection("users")
       .where("username", "==", username)
       .get();
-    // console.log(response.docs[0].data());
     if (!user) {
       throw new Error("user not found");
     }
     const validity = await compare(password, user.docs[0].data().password);
-    console.log(validity);
-    console.log(user.docs[0].data().password);
     if (!validity) {
       throw new Error("user wrong");
     }
+    //Send Back Cookie with Response
     res.cookie(
       "jid",
-      sign({ userId: "test" }, process.env.COOKIE_SECRET!, {
+      sign({ userId: user.docs[0].id }, process.env.COOKIE_SECRET!, {
         expiresIn: "10m"
       }),
       { httpOnly: true }
     );
-    console.log("coookie");
-    console.log(process.env.COOKIE_SECRET);
     return {
-      accessToken: sign({ userId: "test" }, process.env.SECRET_KEY!, {
+      accessToken: sign({ userId: user.docs[0].id }, process.env.SECRET_KEY!, {
         expiresIn: "5m"
       })
     };
@@ -67,8 +58,6 @@ export class UserResolver {
     @Arg("password") password: string
   ) {
     const hashed = await hash(password, 12);
-    console.log(process.env.SECRET_KEY);
-    console.log(hashed);
     await FbApp()
       .firestore()
       .collection("users")
