@@ -2,6 +2,10 @@
 
 A planned to be full-stack web application designed to deliver in-depth information about Literary quotes and possibly more.
 
+# Mock-Design
+<img src="https://i.imgur.com/fyiYjCG.png" alt="Meigen Now Design" />
+
+
 ## Built With
 
 * Express
